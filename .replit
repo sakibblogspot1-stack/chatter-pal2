@@ -1,0 +1,3 @@
+modules = ["dotnet-10.0", "dotnet-7.0", "dotnet-9.0", "angular-node-24", "angular-node-20"]
+[nix]
+channel = "stable-25_05"
