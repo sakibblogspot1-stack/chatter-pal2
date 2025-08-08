@@ -1,4 +1,8 @@
+
 import { useState, useEffect } from "react";
+import Navigation from "./components/Navigation";
+import SettingsModal, { AppSettings } from "./components/SettingsModal";
+import AboutModal from "./components/AboutModal";
 
 function App() {
   console.log("ChatterPal AI Speaking Coach is starting...");
@@ -7,6 +11,22 @@ function App() {
   const [progress, setProgress] = useState(null);
   const [activeModule, setActiveModule] = useState("dashboard");
   const [status, setStatus] = useState("Loading...");
+
+  // Modal states
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // Settings state
+  const [appSettings, setAppSettings] = useState<AppSettings>({
+    replyLanguage: 'English',
+    replyFormality: 'Friendly',
+    replyTone: 'Encouraging',
+    accentFocus: 'American English',
+    difficultyLevel: 'Intermediate',
+    feedbackType: 'Detailed Explanation',
+    enableMemoryTracking: true,
+    pronunciationFocus: true
+  });
 
   // Voice Call states
   const [isRecording, setIsRecording] = useState(false);
@@ -70,7 +90,19 @@ function App() {
       .then(response => response.json())
       .then(progressData => setProgress(progressData))
       .catch(error => console.error("Error loading progress:", error));
+
+    // Load settings from localStorage
+    const savedSettings = localStorage.getItem('chatterpal-settings');
+    if (savedSettings) {
+      setAppSettings(JSON.parse(savedSettings));
+    }
   }, [userId]);
+
+  // Save settings to localStorage
+  const handleSettingsSave = (newSettings: AppSettings) => {
+    setAppSettings(newSettings);
+    localStorage.setItem('chatterpal-settings', JSON.stringify(newSettings));
+  };
 
   // Voice recording functionality with performance fixes
   const handleVoiceRecording = async () => {
@@ -80,7 +112,7 @@ function App() {
         const recorder = new MediaRecorder(stream);
 
         recorder.ondataavailable = () => {
-          // Optimized waveform updates
+          // Optimized waveform updates with requestAnimationFrame
           requestAnimationFrame(() => {
             setVoiceMetrics(prev => ({
               ...prev,
@@ -94,7 +126,7 @@ function App() {
         recorder.start(100);
         setMediaRecorder(recorder);
         setIsRecording(true);
-        setTranscript("AI: Hello! I'm excited to chat with you today. What would you like to talk about?");
+        setTranscript(`AI: Hello! I'm excited to chat with you today using ${appSettings.replyTone.toLowerCase()} tone. What would you like to talk about?`);
 
         // Start call timer
         const startTime = Date.now();
@@ -125,7 +157,8 @@ function App() {
       background: "linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)",
       minHeight: "100vh",
       color: "#ffffff",
-      overflow: "hidden"
+      overflow: "hidden",
+      paddingTop: "70px" // Account for fixed navbar
     },
     dashboard: {
       maxWidth: "1400px",
@@ -199,7 +232,7 @@ function App() {
     },
     backButton: {
       position: "fixed",
-      top: "20px",
+      top: "90px", // Below the navbar
       left: "20px",
       background: "#16213e",
       border: "1px solid #0f3460",
@@ -211,14 +244,14 @@ function App() {
       color: "#00d4ff",
       transition: "all 0.3s ease",
       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-      zIndex: 1000
+      zIndex: 999
     },
     dualPanel: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gap: "30px",
-      minHeight: "calc(100vh - 100px)",
-      padding: "80px 30px 30px",
+      minHeight: "calc(100vh - 150px)", // Account for navbar
+      padding: "30px",
       maxWidth: "1400px",
       margin: "0 auto"
     },
@@ -228,7 +261,8 @@ function App() {
       padding: "30px",
       border: "1px solid #0f3460",
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      overflow: "hidden"
+      overflow: "hidden",
+      height: "fit-content"
     },
     panelTitle: {
       fontSize: "1.5rem",
@@ -339,17 +373,36 @@ function App() {
       background: "rgba(15, 52, 96, 0.2)",
       borderRadius: "16px",
       border: "1px solid #0f3460"
+    },
+    avatarGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(3, 1fr)",
+      gap: "20px",
+      marginBottom: "25px"
+    },
+    avatar: {
+      width: "80px",
+      height: "80px",
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: "2rem",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      border: "2px solid transparent",
+      margin: "0 auto"
     }
   };
 
   const renderDashboard = () => (
     <div style={styles.dashboard} className="fixed-layout">
       <div style={styles.header}>
-        <h1 style={styles.title}>ChatterPal</h1>
-        <p style={styles.subtitle}>AI Speaking Coach</p>
+        <h1 style={styles.title}>Welcome to ChatterPal</h1>
+        <p style={styles.subtitle}>Your AI Speaking Coach</p>
         <p style={styles.tagline}>Overcome foreign language speaking anxiety through contextual practice</p>
         <div style={{ marginTop: "20px", fontSize: "0.875rem", color: "#00d4ff" }}>
-          Status: {status} | User: {user?.username || "Loading..."}
+          Status: {status} | User: {user?.username || "Loading..."} | Language: {appSettings.replyLanguage}
         </div>
       </div>
 
@@ -550,13 +603,13 @@ function App() {
             {isRecording ? (
               <div style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
                 <div style={{ marginBottom: "15px", padding: "12px", background: "rgba(0, 212, 255, 0.1)", borderRadius: "8px", borderLeft: "3px solid #00d4ff" }}>
-                  <strong style={{ color: "#00d4ff" }}>AI:</strong> "That's a great point about sustainable travel! What's been your most memorable eco-friendly experience?"
+                  <strong style={{ color: "#00d4ff" }}>AI ({appSettings.replyTone}):</strong> "That's a great point about sustainable travel! What's been your most memorable eco-friendly experience?"
                 </div>
                 <div style={{ marginBottom: "12px", padding: "12px", background: "rgba(124, 58, 237, 0.1)", borderRadius: "8px", borderLeft: "3px solid #7c3aed" }}>
                   <strong style={{ color: "#7c3aed" }}>You:</strong> "Well, I <span style={{ textDecoration: "underline", color: "#f59e0b" }}>wen't</span> to Costa Rica..."
                 </div>
                 <div style={{ fontSize: "0.8rem", color: "#f59e0b", marginBottom: "15px", padding: "8px", background: "rgba(245, 158, 11, 0.1)", borderRadius: "6px" }}>
-                  💡 Grammar: "went" not "wen't" | ✨ Great vocabulary usage
+                  💡 Grammar: "went" not "wen't" | ✨ Great vocabulary usage | 🎯 {appSettings.feedbackType}
                 </div>
               </div>
             ) : (
@@ -564,12 +617,14 @@ function App() {
                 Click the phone button to start your AI conversation practice.
                 <br /><br />
                 Choose your context above and begin speaking naturally.
+                <br /><br />
+                Current settings: {appSettings.replyLanguage} | {appSettings.replyFormality} | {appSettings.replyTone}
               </div>
             )}
           </div>
 
           {/* Overused Words Alert */}
-          {voiceMetrics.overusedWords.length > 0 && (
+          {voiceMetrics.overusedWords.length > 0 && appSettings.pronunciationFocus && (
             <div style={{ marginTop: "20px", padding: "16px", background: "rgba(239, 68, 68, 0.1)", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
               <h3 style={{ fontSize: "0.9rem", fontWeight: "600", marginBottom: "8px", color: "#ef4444" }}>
                 🔄 Word Variety Suggestions
@@ -735,7 +790,7 @@ function App() {
             </h3>
             <div style={{ fontSize: "16px", lineHeight: "1.7", color: "#e2e8f0" }}>
               <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(0, 245, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #00f5ff" }}>
-                <strong style={{ color: "#00f5ff" }}>AI Interviewer:</strong> "Describe a challenging project you led and how you overcame obstacles."
+                <strong style={{ color: "#00f5ff" }}>AI Interviewer ({appSettings.replyTone}):</strong> "Describe a challenging project you led and how you overcame obstacles."
               </div>
               <div style={{ marginBottom: "15px", padding: "15px", background: "rgba(252, 0, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #fc00ff" }}>
                 <strong style={{ color: "#fc00ff" }}>You:</strong> "In my previous role, I was responsible for..."
@@ -746,6 +801,7 @@ function App() {
                   <li>Strong opening with specific context ✓</li>
                   <li>Use STAR method for better structure</li>
                   <li>Knowledge depth: {interviewMetrics.knowledgeDepth}</li>
+                  <li>Settings: {appSettings.difficultyLevel} level, {appSettings.feedbackType}</li>
                 </ul>
               </div>
             </div>
@@ -763,21 +819,21 @@ function App() {
 
       <div style={styles.dualPanel}>
         <div style={styles.panel}>
-          <div style={styles.auditorium}>
+          <div>
             <h2 style={{ fontSize: "32px", fontWeight: "700", marginBottom: "30px", color: "#ffffff" }}>
               Virtual Auditorium
             </h2>
 
-            <div style={styles.timer}>
+            <div style={{ fontSize: "48px", fontWeight: "800", textAlign: "center", marginBottom: "20px", color: "#00d4ff" }}>
               {String(Math.floor(seminarTimer / 60)).padStart(2, '0')}:
               {String(seminarTimer % 60).padStart(2, '0')}
             </div>
 
-            <div style={{ fontSize: "20px", marginBottom: "20px", color: "#a5b4fc" }}>
+            <div style={{ fontSize: "20px", marginBottom: "20px", color: "#a5b4fc", textAlign: "center" }}>
               Audience: {audienceSize} participants
             </div>
 
-            <div style={{ fontSize: "18px", marginBottom: "30px", color: "#94a3b8" }}>
+            <div style={{ fontSize: "18px", marginBottom: "30px", color: "#94a3b8", textAlign: "center" }}>
               Audience Mood: <span style={{ 
                 color: audienceReaction === "engaged" ? "#10b981" : 
                       audienceReaction === "neutral" ? "#f59e0b" : "#ef4444",
@@ -829,6 +885,7 @@ function App() {
 
             <button
               style={{
+                width: "100%",
                 padding: "15px 30px",
                 background: seminarTimer > 0 ? 
                   "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : 
@@ -905,7 +962,7 @@ function App() {
               {seminarTimer > 0 ? (
                 <div style={{ fontSize: "15px", lineHeight: "1.7" }}>
                   <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(0, 245, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #00f5ff" }}>
-                    <strong style={{ color: "#00f5ff" }}>AI Generated Question:</strong> "Based on your presentation content, how would you handle resistance to change in implementation?"
+                    <strong style={{ color: "#00f5ff" }}>AI Generated Question ({appSettings.replyTone}):</strong> "Based on your presentation content, how would you handle resistance to change in implementation?"
                   </div>
                   <div style={{ marginBottom: "15px", padding: "15px", background: "rgba(252, 0, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #fc00ff" }}>
                     <strong style={{ color: "#fc00ff" }}>Your Response:</strong> "That's an excellent question. Change management requires..."
@@ -916,6 +973,7 @@ function App() {
                       <li>• Engagement Level: {speechMetrics.engagement}%</li>
                       <li>• Speaking Clarity: {speechMetrics.clarity}%</li>
                       <li>• Audience Attention: High</li>
+                      <li>• Language: {appSettings.replyLanguage}</li>
                     </ul>
                   </div>
                   <div style={{ color: "#64748b", fontStyle: "italic", textAlign: "center", marginTop: "20px" }}>
@@ -927,6 +985,8 @@ function App() {
                   Start your presentation to see AI-generated questions and real-time audience feedback analysis.
                   <br /><br />
                   📈 Advanced features: Pace monitoring, coherence scoring, and dynamic audience reactions.
+                  <br /><br />
+                  Current settings: {appSettings.difficultyLevel} level, {appSettings.feedbackType}
                 </div>
               )}
             </div>
@@ -942,7 +1002,24 @@ function App() {
 
   return (
     <div style={styles.root}>
+      <Navigation 
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        onAboutClick={() => setIsAboutOpen(true)}
+      />
+      
       {renderDashboard()}
+      
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={appSettings}
+        onSave={handleSettingsSave}
+      />
+      
+      <AboutModal 
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
+      />
     </div>
   );
 }
