@@ -16,85 +16,97 @@ export default function VoiceInterface({ isActive, onToggle }: VoiceInterfacePro
   const [audioLevel, setAudioLevel] = useState(0);
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState("");
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const { sendMessage, isConnected } = useWebSocket();
 
-  // Start recording
+  // Start recording with performance optimizations
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.time('audio-processing');
+
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        }
+      });
+
       streamRef.current = stream;
-      
-      // Set up audio analysis
-      const audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(stream);
-      
-      analyser.fftSize = 256;
-      source.connect(analyser);
-      
-      audioContextRef.current = audioContext;
-      analyserRef.current = analyser;
-      
-      // Set up MediaRecorder
+
+      // Set up audio context for level monitoring with performance optimization
+      audioContextRef.current = new AudioContext();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 128; // Reduced from 256 for better performance
+      analyserRef.current.smoothingTimeConstant = 0.8;
+
+      source.connect(analyserRef.current);
+
+      // Set up media recorder
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
-      
+
       mediaRecorderRef.current = mediaRecorder;
-      
+
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0 && isConnected) {
-          // Send audio chunk to server for processing
-          sendMessage({
-            type: 'audio_chunk',
-            data: event.data,
-            timestamp: Date.now()
-          });
+        if (event.data.size > 0) {
+          console.time('audio-chunk-processing');
+
+          // Send audio data via WebSocket with throttling
+          const reader = new FileReader();
+          reader.onload = () => {
+            sendMessage({
+              type: 'audio_chunk',
+              data: reader.result,
+              timestamp: Date.now()
+            });
+            console.timeEnd('audio-chunk-processing');
+          };
+          reader.readAsArrayBuffer(event.data);
         }
       };
-      
-      mediaRecorder.start(1000); // Send chunks every second
+
+      mediaRecorder.start(2000); // Increased to 2-second chunks for better performance
       setIsRecording(true);
-      
-      // Start audio level monitoring
-      const monitorAudio = () => {
-        if (analyserRef.current) {
-          const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-          analyserRef.current.getByteFrequencyData(dataArray);
-          
-          // Calculate average volume
-          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          setAudioLevel(Math.min(100, (average / 128) * 100));
+
+      // Optimized audio level monitoring with throttling
+      let lastUpdateTime = 0;
+      const updateAudioLevel = () => {
+        if (analyserRef.current && isRecording) {
+          const now = performance.now();
+
+          // Throttle updates to 30fps for better performance
+          if (now - lastUpdateTime >= 33) {
+            const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+            analyserRef.current.getByteFrequencyData(dataArray);
+
+            const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+            setAudioLevel(Math.round((average / 255) * 100));
+            lastUpdateTime = now;
+          }
+
+          requestAnimationFrame(updateAudioLevel);
         }
       };
-      
-      intervalRef.current = setInterval(monitorAudio, 100);
-      
-      // Start duration counter
-      const startTime = Date.now();
-      const updateDuration = () => {
-        setDuration(Math.floor((Date.now() - startTime) / 1000));
-      };
-      
-      const durationInterval = setInterval(updateDuration, 1000);
-      
-      // Clean up duration interval when stopping
-      const originalStop = mediaRecorder.stop.bind(mediaRecorder);
-      mediaRecorder.stop = () => {
-        clearInterval(durationInterval);
-        originalStop();
-      };
-      
+      updateAudioLevel();
+
+      // Start duration timer
+      intervalRef.current = setInterval(() => {
+        setDuration(prev => prev + 1);
+      }, 1000);
+
+      console.timeEnd('audio-processing');
+
     } catch (error) {
       console.error('Error starting recording:', error);
-      alert('Could not access microphone. Please check permissions.');
     }
   };
 
@@ -104,31 +116,31 @@ export default function VoiceInterface({ isActive, onToggle }: VoiceInterfacePro
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-    
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
-    
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
     }
-    
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    
+
     setAudioLevel(0);
     setDuration(0);
   };
 
   // Handle WebSocket messages
   const { lastMessage } = useWebSocket();
-  
+
   useEffect(() => {
     if (lastMessage) {
       try {
         const data = JSON.parse(lastMessage);
-        
+
         if (data.type === 'transcript') {
           setTranscript(data.text);
         }
@@ -187,7 +199,7 @@ export default function VoiceInterface({ isActive, onToggle }: VoiceInterfacePro
             )}
           </Button>
         </div>
-        
+
         {/* Recording Status */}
         {isRecording && (
           <div className="space-y-3">
@@ -195,7 +207,7 @@ export default function VoiceInterface({ isActive, onToggle }: VoiceInterfacePro
               <p className="text-sm text-gray-600">Recording</p>
               <p className="text-lg font-mono">{formatDuration(duration)}</p>
             </div>
-            
+
             {/* Audio Level Indicator */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -209,7 +221,7 @@ export default function VoiceInterface({ isActive, onToggle }: VoiceInterfacePro
             </div>
           </div>
         )}
-        
+
         {/* Live Transcript */}
         {transcript && (
           <div className="border rounded-lg p-3 bg-gray-50">
@@ -217,7 +229,7 @@ export default function VoiceInterface({ isActive, onToggle }: VoiceInterfacePro
             <p className="text-sm text-gray-700">{transcript}</p>
           </div>
         )}
-        
+
         {/* Instructions */}
         <div className="text-center text-sm text-gray-500">
           {isRecording 

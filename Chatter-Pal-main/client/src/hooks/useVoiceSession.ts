@@ -180,35 +180,55 @@ export function useVoiceSession(userId: string) {
   };
 
   const endSession = () => {
-    // Stop media recorder
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
+    try {
+      // Stop media recorder
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        
+        // Stop all audio tracks
+        mediaRecorderRef.current.stream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
+
+      // Send end session message with error handling
+      if (sessionData.sessionId) {
+        sendMessage({
+          type: 'end_session',
+          sessionId: sessionData.sessionId,
+          data: {
+            duration: sessionData.duration,
+            endedAt: Date.now()
+          }
+        });
+      }
+
+      setIsSessionActive(false);
+      setSessionData(prev => ({
+        ...prev,
+        isActive: false,
+      }));
+
+      toast({
+        title: "Session Ended",
+        description: `Session completed. Duration: ${Math.floor(sessionData.duration / 60)}:${(sessionData.duration % 60).toString().padStart(2, '0')}`,
+      });
+
+    } catch (error) {
+      console.error('Error ending session:', error);
+      toast({
+        title: "Session End Error",
+        description: "Session ended but there was an error generating the report.",
+        variant: "destructive",
+      });
       
-      // Stop all audio tracks
-      mediaRecorderRef.current.stream.getTracks().forEach(track => {
-        track.stop();
-      });
+      // Force cleanup even if there's an error
+      setIsSessionActive(false);
+      setSessionData(prev => ({
+        ...prev,
+        isActive: false,
+      }));
     }
-
-    // Send end session message
-    if (sessionData.sessionId) {
-      sendMessage({
-        type: 'end_session',
-        sessionId: sessionData.sessionId,
-        data: {}
-      });
-    }
-
-    setIsSessionActive(false);
-    setSessionData(prev => ({
-      ...prev,
-      isActive: false,
-    }));
-
-    toast({
-      title: "Session Ended",
-      description: `Session completed. Duration: ${Math.floor(sessionData.duration / 60)}:${(sessionData.duration % 60).toString().padStart(2, '0')}`,
-    });
   };
 
   return {

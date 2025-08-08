@@ -38,7 +38,7 @@ export default function VoiceCallModal({
         <div className="p-4 text-center">
           <div className="mb-6">
             <div className="relative w-32 h-32 mx-auto mb-4">
-              <div className="w-full h-full gradient-primary rounded-full flex items-center justify-center relative">
+              <div className="w-full h-full gradient-primary rounded-full flex items-center justify-center relative recording-active">
                 <Mic className="w-10 h-10 text-white" />
                 <div className="absolute inset-0 rounded-full border-4 border-[color:var(--primary-300)] animate-pulse-slow" />
               </div>

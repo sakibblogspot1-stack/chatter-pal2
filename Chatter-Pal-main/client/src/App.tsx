@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 
 function App() {
   console.log("ChatterPal AI Speaking Coach is starting...");
-  
+
   const [user, setUser] = useState(null);
   const [progress, setProgress] = useState(null);
   const [activeModule, setActiveModule] = useState("dashboard");
@@ -79,7 +78,7 @@ function App() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
-        
+
         recorder.ondataavailable = () => {
           // Simulate real-time waveform updates
           setVoiceMetrics(prev => ({
@@ -94,7 +93,7 @@ function App() {
         setMediaRecorder(recorder);
         setIsRecording(true);
         setTranscript("AI: Hello! I'm excited to chat with you today. What would you like to talk about?");
-        
+
         // Start call timer
         const startTime = Date.now();
         const timer = setInterval(() => {
@@ -102,7 +101,7 @@ function App() {
         }, 1000);
 
         recorder.addEventListener('stop', () => clearInterval(timer));
-        
+
       } catch (error) {
         console.error("Microphone access denied:", error);
       }
@@ -505,7 +504,7 @@ function App() {
       <button style={styles.backButton} onClick={() => setActiveModule("dashboard")}>
         ← Back to ChatterPal
       </button>
-      
+
       <div style={styles.dualPanel}>
         {/* Left Panel - Voice Interface */}
         <div style={styles.panel}>
@@ -536,7 +535,7 @@ function App() {
               ))}
             </div>
           </div>
-          
+
           {/* Waveform Visualization */}
           <div style={styles.waveformContainer}>
             {voiceMetrics.waveform.map((height, index) => (
@@ -597,7 +596,7 @@ function App() {
           <h2 style={{ marginBottom: "20px", fontSize: "24px", fontWeight: "700", color: "#ffffff" }}>
             Live Conversation & Analysis
           </h2>
-          
+
           <div style={styles.callInterface}>
             {isRecording ? (
               <div style={{ fontSize: "16px", lineHeight: "1.8" }}>
@@ -647,14 +646,14 @@ function App() {
       <button style={styles.backButton} onClick={() => setActiveModule("dashboard")}>
         ← Back to ChatterPal
       </button>
-      
+
       <div style={styles.dualPanel}>
         {/* Left Panel - AI Avatars */}
         <div style={styles.panel}>
           <h2 style={{ textAlign: "center", marginBottom: "30px", fontSize: "28px", fontWeight: "700", color: "#ffffff" }}>
             AI Interview Chamber
           </h2>
-          
+
           <div style={styles.avatarGrid}>
             {[
               { id: "professional", emoji: "👨‍💼", name: "Executive", personality: "Formal & Analytical" },
@@ -669,7 +668,7 @@ function App() {
                       ? "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)" 
                       : "rgba(15, 23, 42, 0.8)",
                     borderColor: selectedAvatar === avatar.id ? "#00f5ff" : "transparent",
-                    boxShadow: selectedAvatar === avatar.id ? "0 0 30px rgba(0, 245, 255, 0.4)" : "0 4px 16px rgba(0, 0, 0, 0.2)"
+                    boxShadow: selectedAvatar === avatar.id ? "0 0 30px rgba(0, 245, 255, 0.4)" : "0 4px 8px rgba(0, 0, 0, 0.2)"
                   }}
                   onClick={() => setSelectedAvatar(avatar.id)}
                 >
@@ -768,7 +767,7 @@ function App() {
           <h2 style={{ marginBottom: "30px", fontSize: "24px", fontWeight: "700", color: "#ffffff" }}>
             Real-time Performance Dashboard
           </h2>
-          
+
           <div style={styles.metricsGrid}>
             <div style={styles.metricCard}>
               <div style={styles.metricValue}>{interviewMetrics.responseTime}s</div>
@@ -809,7 +808,7 @@ function App() {
                 <strong style={{ color: "#fc00ff" }}>You:</strong> "In my previous role, I was responsible for..."
               </div>
               <div style={{ marginTop: "20px", padding: "15px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "12px" }}>
-                <strong style={{ color: "#10b981" }}>💡 AI Analysis:</strong> 
+                <strong style={{ color: "#10b981" }}>💡 AI Analysis:</strong>
                 <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
                   <li>Strong opening with specific context ✓</li>
                   <li>Use STAR method for better structure</li>
@@ -828,7 +827,7 @@ function App() {
       <button style={styles.backButton} onClick={() => setActiveModule("dashboard")}>
         ← Back to ChatterPal
       </button>
-      
+
       <div style={styles.dualPanel}>
         {/* Left Panel - Virtual Auditorium */}
         <div style={styles.panel}>
@@ -836,16 +835,16 @@ function App() {
             <h2 style={{ fontSize: "32px", fontWeight: "700", marginBottom: "30px", color: "#ffffff" }}>
               Virtual Auditorium
             </h2>
-            
+
             <div style={styles.timer}>
               {String(Math.floor(seminarTimer / 60)).padStart(2, '0')}:
               {String(seminarTimer % 60).padStart(2, '0')}
             </div>
-            
+
             <div style={{ fontSize: "20px", marginBottom: "20px", color: "#a5b4fc" }}>
               Audience: {audienceSize} participants
             </div>
-            
+
             <div style={{ fontSize: "18px", marginBottom: "30px", color: "#94a3b8" }}>
               Audience Mood: <span style={{ 
                 color: audienceReaction === "engaged" ? "#10b981" : 
@@ -921,7 +920,7 @@ function App() {
                   const interval = setInterval(() => {
                     setSeminarTimer(prev => prev + 1);
                   }, 1000);
-                  
+
                   // Simulate audience reactions
                   setTimeout(() => setAudienceReaction("neutral"), 30000);
                   setTimeout(() => setAudienceReaction("engaged"), 60000);
@@ -938,7 +937,7 @@ function App() {
           <h2 style={{ marginBottom: "25px", fontSize: "24px", fontWeight: "700", color: "#ffffff" }}>
             Smart Teleprompter & AI Q&A
           </h2>
-          
+
           <div style={{ marginBottom: "30px" }}>
             <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "15px", color: "#a5b4fc" }}>
               📝 Speaking Notes
@@ -1013,7 +1012,7 @@ function App() {
   if (activeModule === "voice-call") return renderVoiceCall();
   if (activeModule === "interview") return renderInterview();
   if (activeModule === "seminar") return renderSeminar();
-  
+
   return (
     <div style={styles.root}>
       {renderDashboard()}
