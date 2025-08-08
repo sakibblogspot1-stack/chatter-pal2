@@ -17,7 +17,7 @@ export function useWebSocket(): UseWebSocketReturn {
     try {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
-      
+
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -39,7 +39,7 @@ export function useWebSocket(): UseWebSocketReturn {
         console.log('WebSocket disconnected');
         setIsConnected(false);
         wsRef.current = null;
-        
+
         // Attempt to reconnect after 3 seconds
         reconnectTimeoutRef.current = setTimeout(() => {
           console.log('Attempting to reconnect...');

@@ -27,8 +27,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // WebSocket setup
-  const wss = new WebSocketServer({ server });
+  // WebSocket setup - use a specific path to avoid conflicts with Vite HMR
+  const wss = new WebSocketServer({ 
+    server,
+    path: "/ws"
+  });
 
   wss.on("connection", (ws: WebSocket) => {
     console.log("WebSocket connection established");
