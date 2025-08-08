@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(151, 100%, 46%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(210, 100%, 56%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(266, 76%, 63%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+
+  /* Custom color variables for ChatterPal theme */
+  --primary-50: hsl(153, 100%, 96%);
+  --primary-100: hsl(154, 100%, 90%);
+  --primary-500: hsl(151, 100%, 46%);
+  --primary-600: hsl(151, 100%, 40%);
+  --primary-700: hsl(151, 100%, 35%);
+  --primary-900: hsl(150, 100%, 20%);
+
+  --secondary-50: hsl(214, 100%, 97%);
+  --secondary-100: hsl(214, 100%, 92%);
+  --secondary-500: hsl(210, 100%, 56%);
+  --secondary-600: hsl(210, 100%, 50%);
+  --secondary-700: hsl(210, 100%, 44%);
+
+  --accent-50: hsl(270, 100%, 98%);
+  --accent-100: hsl(269, 100%, 95%);
+  --accent-500: hsl(266, 76%, 63%);
+  --accent-600: hsl(266, 76%, 57%);
+  --accent-700: hsl(266, 76%, 51%);
+
+  --success: hsl(142, 71%, 45%);
+  --warning: hsl(38, 92%, 50%);
+  --error: hsl(0, 84%, 60%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(151, 100%, 46%);
+  --primary-foreground: hsl(240, 10%, 3.9%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Custom animations for voice interface */
+@keyframes voice-wave {
+  0%, 100% { 
+    transform: scaleY(1); 
+  }
+  50% { 
+    transform: scaleY(1.5); 
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-voice-wave {
+  animation: voice-wave 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* Voice interface specific styles */
+.voice-button {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.voice-button:hover {
+  transform: scale(1.05);
+}
+
+.voice-button.recording {
+  animation: pulse-slow 2s infinite;
+}
+
+.voice-waves {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.voice-wave-ring {
+  position: absolute;
+  border: 2px solid;
+  border-radius: 50%;
+  animation: pulse-slow 3s infinite;
+}
+
+/* Gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--accent-500), var(--primary-500));
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--secondary-500), var(--accent-500));
+}
+
+/* ChatterPal specific animations */
+@keyframes conversation-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.05); 
+    opacity: 0.8;
+  }
+}
+
+.animate-conversation {
+  animation: conversation-pulse 2s ease-in-out infinite;
+}
+
+/* Audience reaction animations */
+@keyframes audience-reaction {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-audience {
+  animation: audience-reaction 3s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-500) var(--muted);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-500);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-600);
+}
+
+/* Status indicators */
+.status-indicator {
+  position: relative;
+}
+
+.status-indicator::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.online::after {
+  background-color: var(--success);
+}
+
+.status-indicator.recording::after {
+  background-color: var(--error);
+}
+
+.status-indicator.processing::after {
+  background-color: var(--warning);
+}
