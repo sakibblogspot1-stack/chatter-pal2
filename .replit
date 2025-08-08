@@ -3,7 +3,7 @@ modules = ["dotnet-10.0", "dotnet-7.0", "dotnet-9.0", "angular-node-24", "angula
 channel = "stable-25_05"
 
 [workflows]
-runButton = "ChatterPal Dev Server"
+runButton = "Start ChatterPal"
 
 [[workflows.workflow]]
 name = "Start ChatterPal"
