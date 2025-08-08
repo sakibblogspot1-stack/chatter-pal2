@@ -12,7 +12,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd Chatter-Pal-main && npm run dev"
+args = "cd Chatter-Pal-main && npx tsx server/index.ts"
 
 [[workflows.workflow]]
 name = "ChatterPal Dev Server"
