@@ -5,6 +5,7 @@ channel = "stable-25_05"
 [workflows]
 runButton = "Start ChatterPal"
 
+
 [[workflows.workflow]]
 name = "Start ChatterPal"
 author = 46157585
@@ -22,3 +23,7 @@ mode = "parallel"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd Chatter-Pal-main && npm run dev"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
