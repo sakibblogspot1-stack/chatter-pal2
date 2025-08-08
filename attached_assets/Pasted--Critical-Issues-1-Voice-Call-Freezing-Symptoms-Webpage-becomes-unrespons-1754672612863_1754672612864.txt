@@ -1,0 +1,79 @@
+**Critical Issues:**  
+
+1. **Voice Call Freezing**  
+   - **Symptoms**: Webpage becomes unresponsive when microphone is active. UI elements "kape" (shake/jitter) during recording.  
+   - **Location**: `src/voice-module/voiceRecorder.js` (Lines 32-78)  
+   - **Debug Instructions**:  
+     ```javascript
+     // ADD THESE DEBUG CHECKS:
+     console.time('audio-processing'); 
+     // ... existing audio processing code ...
+     console.timeEnd('audio-processing');
+     ```
+     - Check Replit console for processing time >300ms  
+     - If high: Implement Web Workers for audio processing
+
+2. **Missing Real-time Feedback**  
+   - **Symptoms**: No live feedback during calls/interviews despite analysis being done  
+   - **Location**: `src/feedback-engine/liveFeedback.js`  
+   - **Required Fix**:  
+     ```javascript
+     // REPLACE WITH:
+     socket.on('audio-chunk', (chunk) => {
+       const analysis = await analyzeChunk(chunk); // Should return {grammar: [], pronunciation: score}
+       io.emit('live-feedback', analysis); // Push to UI
+     });
+     ```
+     - Ensure Socket.IO connection exists in `src/socketServer.js`
+
+3. **Session Termination Failure**  
+   - **Symptoms**:  
+     - "End Call" button doesn't trigger report generation  
+     - Session hangs at "Processing..." state  
+   - **Location**: `src/session-manager/sessionEndHandler.js`  
+   - **Debug Steps**:  
+     ```javascript
+     // ADD ERROR LOGGING:
+     generateReport()
+       .catch(err => console.error('REPORT GEN FAILED:', err));
+     ```
+     - Check for uncaught promise rejections in report generation
+
+4. **Module Confusion (Interview/Seminar)**  
+   - **Symptoms**: All modules behave identically  
+   - **Root Cause**: Shared state in `src/modules/moduleRouter.js`  
+   - **Fix**:  
+     ```javascript
+     // DIFFERENTIATE MODULES:
+     router.post('/start-session', (req, res) => {
+       const { moduleType } = req.body;
+       switch(moduleType) {
+         case 'voice': initVoiceSession(); break;
+         case 'interview': initInterview(3); // 3 avatars
+         case 'seminar': initSeminarHall();
+       }
+     });
+     ```
+
+**UI Responsiveness Fixes:**  
+`public/css/ui-fixes.css`  
+```css
+/* Prevent UI jitter */
+.recording-active {
+  transform: translateZ(0); /* GPU acceleration */
+  contain: strict;
+}
+
+/* Microphone button fix */
+#mic-btn {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+Required Package Updates:
+
+json
+// package.json
+"dependencies": {
+  "audio-worklet": "^0.2.0",
+  "web-worker": "^1.2.0"
+}
