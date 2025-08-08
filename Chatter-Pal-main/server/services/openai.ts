@@ -1,244 +1,277 @@
-import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
-});
-
-export interface PersonalityAnalysis {
-  primaryType: string;
-  secondaryTrait: string;
-  strengths: string[];
-  growthAreas: string[];
-  confidence: number;
-  traits: Record<string, number>;
-}
-
-export interface SpeechFeedback {
-  type: 'suggestion' | 'praise' | 'correction';
-  category: 'grammar' | 'pace' | 'personality' | 'filler' | 'clarity';
-  message: string;
-  suggestion?: string;
-  severity: 'low' | 'medium' | 'high';
-}
-
-export class OpenAIService {
-  async analyzeConversationFlow(transcript: string, context: string): Promise<{
-    fluencyScore: number;
-    naturalFlow: string;
-    contextRelevance: string;
-    suggestions: string[];
-  }> {
+async analyzePersonality(transcript: string, previousAnalysis?: PersonalityAnalysis): Promise<PersonalityAnalysis> {
     try {
-      const systemPrompt = `You are ChatterPal, an AI speaking coach focused on natural conversation flow and language fluency.
-      Analyze the conversation for fluency, natural flow, and context relevance.
+      const systemPrompt = `You are ChatterPal, an advanced AI speaking coach specializing in foreign language fluency and confidence building.
+      Analyze the speaking patterns to understand the learner's communication style and provide comprehensive feedback.
       
-      Focus on:
-      - How naturally the conversation flows
-      - Relevance to the conversation context
-      - Language fluency and clarity
-      - Practical improvement suggestions
+      Focus on ChatterPal's core features:
+      - Pronunciation accuracy and improvement suggestions
+      - Grammar error detection and corrections
+      - Vocabulary enhancement and alternatives for overused words
+      - Fluency scoring and confidence building
+      - Cross-session memory of recurring mistakes
+      - Contextual conversation analysis
       
       Respond with JSON in this exact format:
       {
-        "fluencyScore": number (0-100),
-        "naturalFlow": "string (Excellent/Good/Needs Work)",
-        "contextRelevance": "string (Excellent/Good/Needs Work)",
-        "suggestions": ["array of 2-3 practical improvement tips"]
-      }`;
-
-      const userPrompt = `Analyze this conversation transcript:
-      
-      Context: ${context}
-      Transcript: "${transcript}"`;
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.3,
-      });
-
-      const result = JSON.parse(response.choices[0].message.content || '{}');
-      return result;
-    } catch (error) {
-      console.error('OpenAI conversation analysis error:', error);
-      return {
-        fluencyScore: 75,
-        naturalFlow: "Good",
-        contextRelevance: "Good",
-        suggestions: ["Keep practicing natural conversation flow"]
-      };
-    }
-  }
-
-  async analyzePersonality(transcript: string, previousAnalysis?: PersonalityAnalysis): Promise<PersonalityAnalysis> {
-    try {
-      const systemPrompt = `You are ChatterPal, an AI speaking coach specializing in language learning support.
-      Analyze the speaking patterns to understand the learner's communication style and provide supportive feedback.
-      
-      Focus on:
-      - Communication confidence and style
-      - Language learning progress indicators
-      - Areas where the learner shows strength
-      - Gentle suggestions for improvement
-      
-      Respond with JSON in this exact format:
-      {
-        "primaryType": "string (e.g., 'Confident Learner', 'Thoughtful Speaker', 'Enthusiastic Communicator')",
-        "secondaryTrait": "string (complementary trait)",
-        "strengths": ["array of 3-4 positive observations"],
-        "growthAreas": ["array of 3-4 gentle improvement suggestions"],
+        "primaryType": "string (e.g., 'Confident Speaker', 'Developing Communicator', 'Fluent Conversationalist')",
+        "secondaryTrait": "string (complementary speaking trait)",
+        "strengths": ["array of 4-5 specific positive observations"],
+        "growthAreas": ["array of 4-5 actionable improvement suggestions"],
         "confidence": number (0-100),
+        "pronunciationScore": number (0-100),
+        "fluencyScore": number (0-100),
+        "grammarScore": number (0-100),
+        "vocabularyScore": number (0-100),
+        "overusedWords": ["array of frequently repeated words"],
+        "vocabularySuggestions": ["array of alternative word choices"],
+        "grammarErrors": ["array of specific grammar mistakes found"],
+        "pronunciationIssues": ["array of pronunciation corrections needed"],
+        "contextualRelevance": number (0-100),
         "traits": {
           "confident": number (0-100),
           "expressive": number (0-100),
           "analytical": number (0-100),
           "social": number (0-100),
-          "creative": number (0-100)
+          "creative": number (0-100),
+          "technical": number (0-100)
+        },
+        "sessionMemory": {
+          "recurringMistakes": ["array of repeated errors across sessions"],
+          "improvementAreas": ["array of areas showing progress"],
+          "recommendedFocus": ["array of suggested practice areas"]
         }
       }`;
 
-      const userPrompt = `Analyze this learner's speech patterns:
+      const userPrompt = `Analyze this learner's speech for ChatterPal coaching:
       
-      "${transcript}"
+      Transcript: "${transcript}"
       
-      ${previousAnalysis ? `Previous analysis for context: ${JSON.stringify(previousAnalysis)}` : ''}`;
+      ${previousAnalysis ? `Previous session analysis for cross-session memory: ${JSON.stringify(previousAnalysis)}` : ''}
+      
+      Provide detailed analysis covering:
+      1. Pronunciation accuracy and specific sounds to work on
+      2. Grammar patterns and common errors
+      3. Vocabulary usage and overused words with alternatives
+      4. Overall fluency and confidence assessment
+      5. Contextual appropriateness of language use
+      6. Cross-session progress tracking`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-4",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        response_format: { type: "json_object" },
-        temperature: 0.3,
+        temperature: 0.7,
+        max_tokens: 2000
       });
 
-      const result = JSON.parse(response.choices[0].message.content || '{}');
-      return result as PersonalityAnalysis;
+      const responseText = completion.choices[0]?.message?.content;
+      if (!responseText) {
+        throw new Error("No response from OpenAI");
+      }
+
+      const analysis = JSON.parse(responseText);
+      
+      // Validate required fields
+      const requiredFields = [
+        'primaryType', 'secondaryTrait', 'strengths', 'growthAreas', 
+        'confidence', 'pronunciationScore', 'fluencyScore', 'grammarScore',
+        'vocabularyScore', 'traits', 'sessionMemory'
+      ];
+      
+      for (const field of requiredFields) {
+        if (!(field in analysis)) {
+          throw new Error(`Missing required field: ${field}`);
+        }
+      }
+
+      return analysis;
     } catch (error) {
-      console.error('OpenAI personality analysis error:', error);
-      // Return default analysis instead of throwing
+      console.error("Error analyzing personality:", error);
+      
+      // Return default analysis for ChatterPal
       return {
-        primaryType: "Developing Learner",
-        secondaryTrait: "Motivated",
-        strengths: ["Shows enthusiasm for learning", "Attempts complex expressions"],
-        growthAreas: ["Continue practicing daily", "Focus on natural flow"],
-        confidence: 70,
+        primaryType: "Developing Speaker",
+        secondaryTrait: "Enthusiastic Learner",
+        strengths: [
+          "Shows willingness to practice and improve",
+          "Demonstrates effort in communication",
+          "Has potential for growth",
+          "Maintains positive attitude toward learning"
+        ],
+        growthAreas: [
+          "Focus on pronunciation clarity",
+          "Practice grammar fundamentals",
+          "Expand vocabulary usage",
+          "Build speaking confidence",
+          "Work on fluency rhythm"
+        ],
+        confidence: 65,
+        pronunciationScore: 70,
+        fluencyScore: 65,
+        grammarScore: 68,
+        vocabularyScore: 72,
+        overusedWords: ["like", "actually", "basically"],
+        vocabularySuggestions: ["indeed", "furthermore", "essentially"],
+        grammarErrors: ["Subject-verb agreement", "Article usage"],
+        pronunciationIssues: ["Word stress patterns", "Vowel sounds"],
+        contextualRelevance: 75,
         traits: {
-          confident: 70,
-          expressive: 65,
+          confident: 65,
+          expressive: 70,
           analytical: 60,
           social: 75,
-          creative: 68
-        }
-      };
-    }
-  }
-
-  async generateRealTimeFeedback(
-    recentTranscript: string,
-    conversationContext: string,
-    context: { fillerCount: number, pace: number, clarity: number }
-  ): Promise<SpeechFeedback[]> {
-    try {
-      const systemPrompt = `You are ChatterPal, a supportive AI speaking coach for language learners.
-      Provide encouraging, actionable feedback that focuses on natural conversation skills.
-      
-      Conversation context: ${conversationContext}
-      Current context: Filler words: ${context.fillerCount}, Pace: ${context.pace} WPM, Clarity: ${context.clarity}%
-      
-      Provide 1-2 supportive feedback items. Focus on:
-      - Encouraging natural conversation flow
-      - Practical, immediate improvements
-      - Celebrating progress and effort
-      
-      Respond with JSON array in this format:
-      [
-        {
-          "type": "suggestion|praise|encouragement",
-          "category": "fluency|vocabulary|pronunciation|confidence|flow",
-          "message": "supportive, actionable feedback message",
-          "suggestion": "specific alternative or technique (optional)",
-          "severity": "low|medium|high"
-        }
-      ]`;
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Recent speech: "${recentTranscript}"` }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.4,
-      });
-
-      const result = JSON.parse(response.choices[0].message.content || '{"feedback": []}');
-      return result.feedback || [];
-    } catch (error) {
-      console.error('OpenAI feedback generation error:', error);
-      return [{
-        type: 'encouragement',
-        category: 'confidence',
-        message: 'Great job practicing! Keep up the conversation flow.',
-        severity: 'low'
-      }];
-    }
-  }
-
-  async analyzeHabitualPatterns(
-    sessionTranscripts: string[],
-    previousIssues: Record<string, number>
-  ): Promise<{ issues: Record<string, number>, recommendations: string[] }> {
-    try {
-      const systemPrompt = `You are an expert speech pattern analyst. Identify recurring issues and patterns across multiple speaking sessions.
-      
-      Previous tracked issues: ${JSON.stringify(previousIssues)}
-      
-      Focus on:
-      - Grammar mistakes (articles, tenses, etc.)
-      - Filler word usage patterns
-      - Speech rhythm and pacing issues
-      - Vocabulary limitations
-      
-      Respond with JSON in this format:
-      {
-        "issues": {
-          "article_usage": number,
-          "filler_words": number,
-          "pace_variation": number,
-          "grammar_errors": number
+          creative: 68,
+          technical: 62
         },
-        "recommendations": ["array of specific practice suggestions"]
-      }`;
+        sessionMemory: {
+          recurringMistakes: ["Pronunciation of 'th' sounds", "Past tense irregulars"],
+          improvementAreas: ["Vocabulary expansion", "Speaking confidence"],
+          recommendedFocus: ["Daily conversation practice", "Pronunciation drills"]
+        }
+      };
+    }
+  }
 
-      const transcriptText = sessionTranscripts.join('\n\n---SESSION BREAK---\n\n');
+  async generateConversationContext(context: string, userLevel: string = "intermediate"): Promise<string> {
+    try {
+      const systemPrompt = `You are ChatterPal's conversation AI. Generate natural, engaging conversation starters and responses based on the given context and user's language level.
+      
+      Create conversations that:
+      - Are appropriate for the specified context
+      - Match the user's language proficiency level
+      - Encourage natural speech patterns
+      - Include opportunities for vocabulary growth
+      - Are culturally appropriate and inclusive
+      
+      Keep responses conversational, supportive, and encouraging.`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const userPrompt = `Generate a conversation starter for context: "${context}" at ${userLevel} level.
+      
+      Make it engaging and natural, as if talking to a friend who is learning the language.`;
+
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze these session transcripts:\n\n${transcriptText}` }
+          { role: "user", content: userPrompt }
         ],
-        response_format: { type: "json_object" },
-        temperature: 0.2,
+        temperature: 0.8,
+        max_tokens: 200
       });
 
-      const result = JSON.parse(response.choices[0].message.content || '{}');
-      return {
-        issues: result.issues || {},
-        recommendations: result.recommendations || []
-      };
+      return completion.choices[0]?.message?.content || "Hi there! What would you like to talk about today?";
     } catch (error) {
-      console.error('OpenAI pattern analysis error:', error);
-      return { issues: {}, recommendations: [] };
+      console.error("Error generating conversation context:", error);
+      return "Hello! I'm excited to practice speaking with you. What's on your mind today?";
     }
+  }
+
+  async generateInterviewQuestion(subject: string, difficulty: string, previousQuestions: string[] = []): Promise<string> {
+    try {
+      const systemPrompt = `You are ChatterPal's interview simulator. Generate appropriate interview questions based on the subject and difficulty level.
+      
+      Create questions that:
+      - Match the specified subject area and difficulty
+      - Are realistic for actual job interviews
+      - Encourage detailed, thoughtful responses
+      - Build progressively in complexity
+      - Avoid repeating previous questions
+      
+      Adapt difficulty:
+      - Beginner: Simple, direct questions
+      - Intermediate: Multi-part questions with some complexity
+      - Advanced: Complex scenarios and behavioral questions
+      - Adaptive: Adjust based on response quality`;
+
+      const userPrompt = `Generate an interview question for:
+      Subject: ${subject}
+      Difficulty: ${difficulty}
+      Previous questions asked: ${previousQuestions.join(", ") || "None"}
+      
+      Make it realistic and appropriate for the level.`;
+
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      });
+
+      return completion.choices[0]?.message?.content || "Tell me about your experience with this field.";
+    } catch (error) {
+      console.error("Error generating interview question:", error);
+      return "Can you describe a challenging situation you've faced and how you handled it?";
+    }
+  }
+
+  async generateSeminarQuestion(presentationContent: string): Promise<string> {
+    try {
+      const systemPrompt = `You are ChatterPal's seminar AI that generates relevant audience questions based on presentation content.
+      
+      Create questions that:
+      - Are directly related to the presentation content
+      - Encourage deeper thinking and elaboration
+      - Are appropriate for an academic or professional setting
+      - Challenge the speaker to demonstrate expertise
+      - Are realistic questions an audience might ask
+      
+      Focus on practical applications, clarifications, and extensions of the presented ideas.`;
+
+      const userPrompt = `Based on this presentation content, generate a thoughtful audience question:
+      
+      "${presentationContent}"
+      
+      Make it relevant and challenging but appropriate for the context.`;
+
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 100
+      });
+
+      return completion.choices[0]?.message?.content || "Can you elaborate on how this applies to real-world scenarios?";
+    } catch (error) {
+      console.error("Error generating seminar question:", error);
+      return "What are the practical implications of what you've presented?";
+    }
+  }
+
+  async analyzeSpeechPace(transcript: string, duration: number): Promise<{
+    wordsPerMinute: number;
+    paceRating: "Too Slow" | "Optimal" | "Too Fast";
+    suggestion: string;
+  }> {
+    const wordCount = transcript.split(/\s+/).filter(word => word.length > 0).length;
+    const wordsPerMinute = Math.round((wordCount / duration) * 60);
+
+    let paceRating: "Too Slow" | "Optimal" | "Too Fast";
+    let suggestion: string;
+
+    if (wordsPerMinute < 140) {
+      paceRating = "Too Slow";
+      suggestion = "Try to speak a bit faster to maintain audience engagement. Practice with a metronome to build rhythm.";
+    } else if (wordsPerMinute > 180) {
+      paceRating = "Too Fast";
+      suggestion = "Slow down slightly to ensure clarity. Take pauses between main points to let ideas sink in.";
+    } else {
+      paceRating = "Optimal";
+      suggestion = "Great speaking pace! You're maintaining good rhythm and clarity.";
+    }
+
+    return {
+      wordsPerMinute,
+      paceRating,
+      suggestion
+    };
   }
 }
-
-export const openaiService = new OpenAIService();

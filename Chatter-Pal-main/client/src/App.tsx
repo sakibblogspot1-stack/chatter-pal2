@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 
 function App() {
-  console.log("VoiceCoach App is starting...");
+  console.log("ChatterPal AI Speaking Coach is starting...");
   
   const [user, setUser] = useState(null);
   const [progress, setProgress] = useState(null);
@@ -13,25 +14,42 @@ function App() {
   const [transcript, setTranscript] = useState("");
   const [sessionMemory, setSessionMemory] = useState(true);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [conversationContext, setConversationContext] = useState("travel");
+  const [callDuration, setCallDuration] = useState(0);
   const [voiceMetrics, setVoiceMetrics] = useState({
-    clarity: 85,
-    confidence: "Good",
-    waveform: Array(20).fill(0).map(() => Math.random() * 100)
+    pronunciation: 92,
+    fluency: 87,
+    vocabulary: 89,
+    confidence: "Excellent",
+    waveform: Array(30).fill(0).map(() => Math.random() * 100),
+    overusedWords: ["actually", "like", "basically"],
+    grammarErrors: 2,
+    newWords: 5
   });
 
   // Interview states
   const [selectedAvatar, setSelectedAvatar] = useState("professional");
   const [interviewSubject, setInterviewSubject] = useState("technical");
+  const [difficultyLevel, setDifficultyLevel] = useState("adaptive");
   const [interviewMetrics, setInterviewMetrics] = useState({
-    eyeContact: 78,
-    bodyLanguage: 82,
-    responseTime: "Good"
+    responseTime: 3.2,
+    clarity: 91,
+    relevance: 88,
+    confidence: 85,
+    knowledgeDepth: "Intermediate"
   });
 
   // Seminar states
   const [seminarTimer, setSeminarTimer] = useState(0);
   const [teleprompterText, setTeleprompterText] = useState("Welcome to your presentation. Begin speaking when ready...");
   const [audienceSize, setAudienceSize] = useState(45);
+  const [audienceReaction, setAudienceReaction] = useState("engaged");
+  const [speechMetrics, setSpeechMetrics] = useState({
+    pace: "Optimal",
+    coherence: 94,
+    engagement: 89,
+    clarity: 87
+  });
 
   const userId = "ac3507e4-9e2d-4e58-b0f7-2410465f5775";
 
@@ -66,15 +84,24 @@ function App() {
           // Simulate real-time waveform updates
           setVoiceMetrics(prev => ({
             ...prev,
-            waveform: Array(20).fill(0).map(() => Math.random() * 100),
-            clarity: Math.min(95, prev.clarity + Math.random() * 4 - 2)
+            waveform: Array(30).fill(0).map(() => Math.random() * 100),
+            pronunciation: Math.min(98, prev.pronunciation + Math.random() * 3 - 1),
+            fluency: Math.min(95, prev.fluency + Math.random() * 2 - 1)
           }));
         };
 
         recorder.start(100);
         setMediaRecorder(recorder);
         setIsRecording(true);
-        setTranscript("Listening for speech patterns...");
+        setTranscript("AI: Hello! I'm excited to chat with you today. What would you like to talk about?");
+        
+        // Start call timer
+        const startTime = Date.now();
+        const timer = setInterval(() => {
+          setCallDuration(Math.floor((Date.now() - startTime) / 1000));
+        }, 1000);
+
+        recorder.addEventListener('stop', () => clearInterval(timer));
         
       } catch (error) {
         console.error("Microphone access denied:", error);
@@ -86,71 +113,104 @@ function App() {
         setMediaRecorder(null);
       }
       setIsRecording(false);
-      setTranscript("");
+      setCallDuration(0);
     }
   };
 
-  // CSS-in-JS styles using your design specifications
+  // CSS-in-JS styles with futuristic design
   const styles = {
     root: {
       fontFamily: "'Inter', -apple-system, sans-serif",
-      background: "#F9FAFB",
+      background: "linear-gradient(135deg, #0a0b1e 0%, #1a1b3a 50%, #2d1b69 100%)",
       minHeight: "100vh",
-      color: "#1F2937"
+      color: "#ffffff",
+      overflow: "hidden"
     },
     dashboard: {
-      maxWidth: "1200px",
+      maxWidth: "1400px",
       margin: "0 auto",
-      padding: "40px 20px"
+      padding: "40px 20px",
+      position: "relative" as const
+    },
+    bgAnimation: {
+      position: "fixed" as const,
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      overflow: "hidden",
+      zIndex: -1
+    },
+    floatingParticle: {
+      position: "absolute" as const,
+      width: "4px",
+      height: "4px",
+      background: "rgba(99, 102, 241, 0.6)",
+      borderRadius: "50%",
+      animation: "float 20s infinite linear"
     },
     header: {
       textAlign: "center" as const,
-      marginBottom: "60px"
+      marginBottom: "60px",
+      position: "relative" as const
     },
     title: {
-      fontSize: "48px",
-      fontWeight: "700",
-      background: "linear-gradient(90deg, #6EE7B7 0%, #3B82F6 100%)",
+      fontSize: "64px",
+      fontWeight: "800",
+      background: "linear-gradient(135deg, #00f5ff 0%, #fc00ff 50%, #fffc00 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
-      marginBottom: "16px"
+      marginBottom: "20px",
+      textShadow: "0 0 30px rgba(0, 245, 255, 0.3)",
+      letterSpacing: "-2px"
     },
     subtitle: {
-      fontSize: "20px",
-      color: "#6B7280",
-      fontWeight: "400"
+      fontSize: "24px",
+      color: "#a5b4fc",
+      fontWeight: "500",
+      marginBottom: "16px"
+    },
+    tagline: {
+      fontSize: "18px",
+      color: "#64748b",
+      fontStyle: "italic",
+      marginBottom: "30px"
     },
     moduleGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-      gap: "30px",
+      gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+      gap: "40px",
       marginBottom: "40px"
     },
     moduleCard: {
-      background: "rgba(255, 255, 255, 0.8)",
-      backdropFilter: "blur(10px)",
-      borderRadius: "20px",
+      background: "rgba(15, 23, 42, 0.8)",
+      backdropFilter: "blur(20px)",
+      borderRadius: "24px",
       padding: "40px 30px",
       textAlign: "center" as const,
       cursor: "pointer",
-      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      border: "1px solid rgba(255, 255, 255, 0.2)",
+      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+      border: "1px solid rgba(99, 102, 241, 0.2)",
       position: "relative" as const,
-      overflow: "hidden"
+      overflow: "hidden",
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
     },
     moduleIcon: {
-      fontSize: "64px",
-      marginBottom: "20px",
-      display: "block"
+      fontSize: "72px",
+      marginBottom: "24px",
+      display: "block",
+      filter: "drop-shadow(0 0 20px rgba(99, 102, 241, 0.4))"
     },
     moduleTitle: {
-      fontSize: "24px",
-      fontWeight: "600",
-      marginBottom: "12px",
-      color: "#1F2937"
+      fontSize: "28px",
+      fontWeight: "700",
+      marginBottom: "16px",
+      background: "linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent"
     },
     moduleDescription: {
-      color: "#6B7280",
+      color: "#94a3b8",
       fontSize: "16px",
       lineHeight: "1.6"
     },
@@ -158,16 +218,17 @@ function App() {
       position: "fixed" as const,
       top: "30px",
       left: "30px",
-      background: "rgba(255, 255, 255, 0.9)",
+      background: "rgba(15, 23, 42, 0.9)",
       backdropFilter: "blur(10px)",
-      border: "none",
-      borderRadius: "12px",
-      padding: "12px 20px",
+      border: "1px solid rgba(99, 102, 241, 0.3)",
+      borderRadius: "16px",
+      padding: "12px 24px",
       cursor: "pointer",
       fontSize: "16px",
-      fontWeight: "500",
-      color: "#4A80F0",
-      transition: "all 0.3s ease"
+      fontWeight: "600",
+      color: "#00f5ff",
+      transition: "all 0.3s ease",
+      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)"
     },
     dualPanel: {
       display: "grid",
@@ -177,51 +238,101 @@ function App() {
       padding: "60px 30px 30px"
     },
     panel: {
-      background: "rgba(255, 255, 255, 0.9)",
-      backdropFilter: "blur(10px)",
-      borderRadius: "20px",
+      background: "rgba(15, 23, 42, 0.8)",
+      backdropFilter: "blur(20px)",
+      borderRadius: "24px",
       padding: "30px",
-      overflow: "hidden"
+      border: "1px solid rgba(99, 102, 241, 0.2)",
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
     },
     waveformContainer: {
-      height: "120px",
+      height: "140px",
       display: "flex",
       alignItems: "flex-end",
       justifyContent: "center",
-      gap: "4px",
-      marginBottom: "30px"
+      gap: "3px",
+      marginBottom: "30px",
+      padding: "20px",
+      background: "rgba(0, 0, 0, 0.3)",
+      borderRadius: "16px"
     },
     waveformBar: {
-      width: "8px",
-      background: isRecording ? "linear-gradient(90deg, #6EE7B7 0%, #3B82F6 100%)" : "#E5E7EB",
-      borderRadius: "4px",
-      transition: "all 0.1s ease"
+      width: "6px",
+      background: isRecording 
+        ? "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)" 
+        : "rgba(148, 163, 184, 0.3)",
+      borderRadius: "3px",
+      transition: "all 0.1s ease",
+      boxShadow: isRecording ? "0 0 8px rgba(0, 245, 255, 0.4)" : "none"
     },
     recordButton: {
-      width: "120px",
-      height: "120px",
+      width: "140px",
+      height: "140px",
       borderRadius: "50%",
       border: "none",
-      background: isRecording ? "#EF4444" : "linear-gradient(90deg, #6EE7B7 0%, #3B82F6 100%)",
+      background: isRecording 
+        ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" 
+        : "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)",
       color: "white",
-      fontSize: "48px",
+      fontSize: "56px",
       cursor: "pointer",
       transition: "all 0.3s ease",
       margin: "0 auto",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)"
+      boxShadow: isRecording 
+        ? "0 0 40px rgba(239, 68, 68, 0.6)" 
+        : "0 0 40px rgba(0, 245, 255, 0.4)",
+      position: "relative" as const
     },
-    transcript: {
-      background: "#F9FAFB",
-      borderRadius: "12px",
+    callInterface: {
+      background: "rgba(0, 0, 0, 0.4)",
+      borderRadius: "16px",
       padding: "20px",
-      height: "300px",
-      overflowY: "auto" as const,
-      fontSize: "16px",
-      lineHeight: "1.6",
-      border: "1px solid #E5E7EB"
+      marginTop: "20px"
+    },
+    contextSelector: {
+      display: "grid",
+      gridTemplateColumns: "repeat(3, 1fr)",
+      gap: "15px",
+      marginBottom: "20px"
+    },
+    contextButton: {
+      padding: "12px 16px",
+      borderRadius: "12px",
+      border: "1px solid rgba(99, 102, 241, 0.3)",
+      background: "rgba(15, 23, 42, 0.6)",
+      color: "#a5b4fc",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      fontSize: "14px",
+      fontWeight: "500"
+    },
+    metricsGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gap: "20px",
+      marginTop: "30px"
+    },
+    metricCard: {
+      background: "rgba(0, 0, 0, 0.3)",
+      borderRadius: "16px",
+      padding: "20px",
+      textAlign: "center" as const,
+      border: "1px solid rgba(99, 102, 241, 0.2)"
+    },
+    metricValue: {
+      fontSize: "32px",
+      fontWeight: "700",
+      background: "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      marginBottom: "8px"
+    },
+    metricLabel: {
+      fontSize: "14px",
+      color: "#94a3b8"
     },
     avatarGrid: {
       display: "grid",
@@ -230,76 +341,93 @@ function App() {
       marginBottom: "30px"
     },
     avatar: {
-      width: "120px",
-      height: "120px",
-      borderRadius: "50%",
+      width: "100px",
+      height: "100px",
+      borderRadius: "20px",
       cursor: "pointer",
       transition: "all 0.3s ease",
-      border: "4px solid transparent",
+      border: "2px solid transparent",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: "48px"
+      fontSize: "40px",
+      background: "rgba(15, 23, 42, 0.8)",
+      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)"
     },
     auditorium: {
-      background: "linear-gradient(180deg, #1F2937 0%, #374151 100%)",
-      borderRadius: "20px",
+      background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)",
+      borderRadius: "24px",
       padding: "40px",
       textAlign: "center" as const,
       color: "white",
       minHeight: "400px",
-      position: "relative" as const
+      position: "relative" as const,
+      border: "1px solid rgba(99, 102, 241, 0.3)"
     },
     timer: {
       fontSize: "72px",
-      fontWeight: "700",
-      color: "#6EE7B7",
-      marginBottom: "20px"
+      fontWeight: "800",
+      background: "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      marginBottom: "20px",
+      textShadow: "0 0 30px rgba(0, 245, 255, 0.3)"
     },
-    teleprompter: {
-      background: "rgba(0, 0, 0, 0.3)",
-      borderRadius: "12px",
-      padding: "20px",
-      fontSize: "18px",
-      lineHeight: "1.8",
-      maxHeight: "200px",
-      overflowY: "auto" as const
+    progressSection: {
+      marginTop: "40px",
+      padding: "30px",
+      background: "rgba(0, 0, 0, 0.2)",
+      borderRadius: "20px",
+      border: "1px solid rgba(99, 102, 241, 0.2)"
     }
   };
 
   const renderDashboard = () => (
     <div style={styles.dashboard}>
+      {/* Animated Background */}
+      <div style={styles.bgAnimation}>
+        {Array(50).fill(0).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              ...styles.floatingParticle,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 20}s`,
+              animationDuration: `${20 + Math.random() * 10}s`
+            }}
+          />
+        ))}
+      </div>
+
       <div style={styles.header}>
-        <h1 style={styles.title}>VoiceCoach AI</h1>
-        <p style={styles.subtitle}>Master your communication with AI-powered coaching</p>
-        <div style={{ marginTop: "20px", fontSize: "14px", color: "#10B981" }}>
+        <h1 style={styles.title}>ChatterPal</h1>
+        <p style={styles.subtitle}>AI Speaking Coach</p>
+        <p style={styles.tagline}>Overcome foreign language speaking anxiety through contextual practice</p>
+        <div style={{ marginTop: "20px", fontSize: "14px", color: "#6366f1" }}>
           Status: {status} | User: {user?.username || "Loading..."}
         </div>
       </div>
 
       <div style={styles.moduleGrid}>
         <div 
-          style={{
-            ...styles.moduleCard,
-            transform: "scale(1)",
-            background: "rgba(255, 255, 255, 0.9)"
-          }}
+          style={styles.moduleCard}
           onClick={() => setActiveModule("voice-call")}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.background = "rgba(255, 255, 255, 1)";
-            e.currentTarget.style.borderImage = "linear-gradient(90deg, #6EE7B7 0%, #3B82F6 100%) 1";
+            e.currentTarget.style.transform = "scale(1.05) translateY(-8px)";
+            e.currentTarget.style.borderColor = "rgba(0, 245, 255, 0.6)";
+            e.currentTarget.style.boxShadow = "0 20px 40px rgba(0, 245, 255, 0.2)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.9)";
-            e.currentTarget.style.borderImage = "none";
+            e.currentTarget.style.transform = "scale(1) translateY(0)";
+            e.currentTarget.style.borderColor = "rgba(99, 102, 241, 0.2)";
+            e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.3)";
           }}
         >
-          <span style={styles.moduleIcon}>🎤</span>
-          <h3 style={styles.moduleTitle}>Voice Call</h3>
+          <span style={styles.moduleIcon}>📞</span>
+          <h3 style={styles.moduleTitle}>Voice Call Simulator</h3>
           <p style={styles.moduleDescription}>
-            Real-time AI coaching with dynamic feedback and mistake highlighting during natural conversations
+            Real-time AI conversations with pronunciation scoring, grammar analysis, and vocabulary enhancement. Memory-enabled feedback tracks your progress.
           </p>
         </div>
 
@@ -307,18 +435,20 @@ function App() {
           style={styles.moduleCard}
           onClick={() => setActiveModule("interview")}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.background = "rgba(255, 255, 255, 1)";
+            e.currentTarget.style.transform = "scale(1.05) translateY(-8px)";
+            e.currentTarget.style.borderColor = "rgba(252, 0, 255, 0.6)";
+            e.currentTarget.style.boxShadow = "0 20px 40px rgba(252, 0, 255, 0.2)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.9)";
+            e.currentTarget.style.transform = "scale(1) translateY(0)";
+            e.currentTarget.style.borderColor = "rgba(99, 102, 241, 0.2)";
+            e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.3)";
           }}
         >
-          <span style={styles.moduleIcon}>👥</span>
-          <h3 style={styles.moduleTitle}>Interview</h3>
+          <span style={styles.moduleIcon}>🤖</span>
+          <h3 style={styles.moduleTitle}>AI Interview Chamber</h3>
           <p style={styles.moduleDescription}>
-            Practice with AI avatars in realistic interview scenarios with performance metrics
+            Practice with adaptive AI avatars. Customizable subjects with real-time performance dashboard and knowledge depth assessment.
           </p>
         </div>
 
@@ -326,19 +456,45 @@ function App() {
           style={styles.moduleCard}
           onClick={() => setActiveModule("seminar")}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.02)";
-            e.currentTarget.style.background = "rgba(255, 255, 255, 1)";
+            e.currentTarget.style.transform = "scale(1.05) translateY(-8px)";
+            e.currentTarget.style.borderColor = "rgba(255, 252, 0, 0.6)";
+            e.currentTarget.style.boxShadow = "0 20px 40px rgba(255, 252, 0, 0.2)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.9)";
+            e.currentTarget.style.transform = "scale(1) translateY(0)";
+            e.currentTarget.style.borderColor = "rgba(99, 102, 241, 0.2)";
+            e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.3)";
           }}
         >
-          <span style={styles.moduleIcon}>🎭</span>
-          <h3 style={styles.moduleTitle}>Seminar</h3>
+          <span style={styles.moduleIcon}>🎤</span>
+          <h3 style={styles.moduleTitle}>Seminar Simulator</h3>
           <p style={styles.moduleDescription}>
-            Virtual auditorium presentations with teleprompter and Q&A transcript panel
+            Virtual audience with dynamic reactions. Advanced speech analysis including pace monitoring and AI-generated Q&A sessions.
           </p>
+        </div>
+      </div>
+
+      <div style={styles.progressSection}>
+        <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "20px", color: "#ffffff" }}>
+          Your Progress Journey
+        </h2>
+        <div style={styles.metricsGrid}>
+          <div style={styles.metricCard}>
+            <div style={styles.metricValue}>127</div>
+            <div style={styles.metricLabel}>Sessions Completed</div>
+          </div>
+          <div style={styles.metricCard}>
+            <div style={styles.metricValue}>89%</div>
+            <div style={styles.metricLabel}>Fluency Score</div>
+          </div>
+          <div style={styles.metricCard}>
+            <div style={styles.metricValue}>45</div>
+            <div style={styles.metricLabel}>Mistakes Overcome</div>
+          </div>
+          <div style={styles.metricCard}>
+            <div style={styles.metricValue}>12</div>
+            <div style={styles.metricLabel}>Day Streak</div>
+          </div>
         </div>
       </div>
     </div>
@@ -347,15 +503,39 @@ function App() {
   const renderVoiceCall = () => (
     <div style={styles.root}>
       <button style={styles.backButton} onClick={() => setActiveModule("dashboard")}>
-        ← Dashboard
+        ← Back to ChatterPal
       </button>
       
       <div style={styles.dualPanel}>
-        {/* Left Panel - Voice Visualizer */}
+        {/* Left Panel - Voice Interface */}
         <div style={styles.panel}>
-          <h2 style={{ textAlign: "center", marginBottom: "30px", fontSize: "24px", fontWeight: "600" }}>
-            AI Voice Coach
+          <h2 style={{ textAlign: "center", marginBottom: "30px", fontSize: "28px", fontWeight: "700", color: "#ffffff" }}>
+            Voice Call Simulator
           </h2>
+
+          {/* Context Selection */}
+          <div style={{ marginBottom: "30px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "15px", color: "#a5b4fc" }}>
+              Choose Conversation Context
+            </h3>
+            <div style={styles.contextSelector}>
+              {["Travel", "Business", "Casual", "Academic", "Social", "Technical"].map((context) => (
+                <button
+                  key={context}
+                  style={{
+                    ...styles.contextButton,
+                    background: conversationContext === context.toLowerCase() 
+                      ? "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)" 
+                      : "rgba(15, 23, 42, 0.6)",
+                    color: conversationContext === context.toLowerCase() ? "#ffffff" : "#a5b4fc"
+                  }}
+                  onClick={() => setConversationContext(context.toLowerCase())}
+                >
+                  {context}
+                </button>
+              ))}
+            </div>
+          </div>
           
           {/* Waveform Visualization */}
           <div style={styles.waveformContainer}>
@@ -376,90 +556,87 @@ function App() {
               style={styles.recordButton}
               onClick={handleVoiceRecording}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.transform = "scale(1.1)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              {isRecording ? "🛑" : "🎤"}
+              {isRecording ? "⏸️" : "📞"}
             </button>
+            {isRecording && (
+              <div style={{ marginTop: "15px", color: "#00f5ff", fontSize: "18px", fontWeight: "600" }}>
+                Call Duration: {Math.floor(callDuration / 60)}:{(callDuration % 60).toString().padStart(2, '0')}
+              </div>
+            )}
           </div>
 
-          {/* Session Controls */}
-          <div style={{ textAlign: "center" }}>
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontSize: "16px" }}>
-              <input
-                type="checkbox"
-                checked={sessionMemory}
-                onChange={(e) => setSessionMemory(e.target.checked)}
-                style={{ width: "18px", height: "18px" }}
-              />
-              Session Memory
-            </label>
-          </div>
-
-          {/* Metrics */}
-          <div style={{ marginTop: "30px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-              <div style={{ textAlign: "center", padding: "15px", background: "#F0F9FF", borderRadius: "12px" }}>
-                <div style={{ fontSize: "24px", fontWeight: "600", color: "#3B82F6" }}>
-                  {Math.round(voiceMetrics.clarity)}%
-                </div>
-                <div style={{ fontSize: "14px", color: "#6B7280" }}>Clarity</div>
-              </div>
-              <div style={{ textAlign: "center", padding: "15px", background: "#F0FDF4", borderRadius: "12px" }}>
-                <div style={{ fontSize: "24px", fontWeight: "600", color: "#10B981" }}>
-                  {voiceMetrics.confidence}
-                </div>
-                <div style={{ fontSize: "14px", color: "#6B7280" }}>Confidence</div>
-              </div>
+          {/* Advanced Metrics */}
+          <div style={styles.metricsGrid}>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{voiceMetrics.pronunciation}%</div>
+              <div style={styles.metricLabel}>Pronunciation</div>
+            </div>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{voiceMetrics.fluency}%</div>
+              <div style={styles.metricLabel}>Fluency</div>
+            </div>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{voiceMetrics.grammarErrors}</div>
+              <div style={styles.metricLabel}>Grammar Fixes</div>
+            </div>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{voiceMetrics.newWords}</div>
+              <div style={styles.metricLabel}>New Words</div>
             </div>
           </div>
         </div>
 
-        {/* Right Panel - Real-time Transcript */}
+        {/* Right Panel - Conversation & Analysis */}
         <div style={styles.panel}>
-          <h2 style={{ marginBottom: "20px", fontSize: "24px", fontWeight: "600" }}>
-            Live Transcript & Feedback
+          <h2 style={{ marginBottom: "20px", fontSize: "24px", fontWeight: "700", color: "#ffffff" }}>
+            Live Conversation & Analysis
           </h2>
           
-          <div style={styles.transcript}>
+          <div style={styles.callInterface}>
             {isRecording ? (
-              <div>
-                <p style={{ color: "#6B7280", marginBottom: "15px" }}>🔴 Recording in progress...</p>
-                <p style={{ marginBottom: "10px" }}>
-                  "Hello, I'm practicing my <span style={{ textDecoration: "underline", textDecorationColor: "#F59E0B" }}>presentashun</span> skills today."
-                </p>
-                <div style={{ fontSize: "12px", color: "#F59E0B", marginBottom: "15px" }}>
-                  💡 Pronunciation: "presentation" (pre-zen-TAY-shun)
+              <div style={{ fontSize: "16px", lineHeight: "1.8" }}>
+                <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(0, 245, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #00f5ff" }}>
+                  <strong style={{ color: "#00f5ff" }}>AI:</strong> "That's a great point about sustainable travel! I'm curious - what's been your most memorable eco-friendly travel experience?"
                 </div>
-                <p style={{ marginBottom: "10px" }}>
-                  "I want to <span style={{ color: "#10B981", cursor: "pointer", textDecoration: "underline" }}>improve</span> my communication abilities."
-                </p>
-                <div style={{ fontSize: "12px", color: "#10B981", marginBottom: "15px" }}>
-                  ✨ Good word choice! Alternative: "enhance", "develop", "refine"
+                <div style={{ marginBottom: "15px", padding: "15px", background: "rgba(252, 0, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #fc00ff" }}>
+                  <strong style={{ color: "#fc00ff" }}>You:</strong> "Well, I <span style={{ textDecoration: "underline", textDecorationColor: "#fbbf24" }}>wen't</span> to Costa Rica last year and stayed at this amazing <span style={{ color: "#10b981", cursor: "pointer" }}>eco-lodge</span>..."
+                </div>
+                <div style={{ fontSize: "14px", color: "#fbbf24", marginBottom: "20px", padding: "10px", background: "rgba(251, 191, 36, 0.1)", borderRadius: "8px" }}>
+                  💡 Grammar: "went" not "wen't" | ✨ Great vocabulary: "eco-lodge"
+                </div>
+                <div style={{ marginTop: "20px", padding: "15px", background: "rgba(99, 102, 241, 0.1)", borderRadius: "12px" }}>
+                  <strong style={{ color: "#6366f1" }}>Memory Bank:</strong> Remembering your interest in sustainable travel for future conversations...
                 </div>
               </div>
             ) : (
-              <p style={{ color: "#9CA3AF", fontStyle: "italic" }}>
-                Click the microphone to start your voice coaching session. 
-                Real-time feedback will appear here with grammar corrections, pronunciation tips, and vocabulary suggestions.
-              </p>
+              <div style={{ color: "#64748b", textAlign: "center", padding: "60px 20px", fontStyle: "italic" }}>
+                Click the phone button to start your AI conversation practice. 
+                <br /><br />
+                Choose your context above and begin speaking naturally. 
+                The AI will engage in conversation while analyzing your speech patterns.
+              </div>
             )}
           </div>
 
-          {/* Dynamic Feedback Panel */}
-          <div style={{ marginTop: "20px", padding: "20px", background: "#FFFBEB", borderRadius: "12px", border: "1px solid #FED7AA" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "10px", color: "#92400E" }}>
-              AI Coach Insights
-            </h3>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "14px", lineHeight: "1.6" }}>
-              <li style={{ marginBottom: "8px", color: "#92400E" }}>• Speak 15% slower for better clarity</li>
-              <li style={{ marginBottom: "8px", color: "#92400E" }}>• Great use of varied vocabulary</li>
-              <li style={{ marginBottom: "8px", color: "#92400E" }}>• Consider pausing between main points</li>
-            </ul>
-          </div>
+          {/* Overused Words Alert */}
+          {voiceMetrics.overusedWords.length > 0 && (
+            <div style={{ marginTop: "20px", padding: "20px", background: "rgba(239, 68, 68, 0.1)", borderRadius: "12px", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "10px", color: "#ef4444" }}>
+                🔄 Word Variety Suggestions
+              </h3>
+              <div style={{ fontSize: "14px", color: "#fca5a5" }}>
+                Overused: {voiceMetrics.overusedWords.join(", ")}
+                <br />
+                Try: "indeed", "furthermore", "essentially" instead
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -468,132 +645,176 @@ function App() {
   const renderInterview = () => (
     <div style={styles.root}>
       <button style={styles.backButton} onClick={() => setActiveModule("dashboard")}>
-        ← Dashboard
+        ← Back to ChatterPal
       </button>
       
       <div style={styles.dualPanel}>
         {/* Left Panel - AI Avatars */}
         <div style={styles.panel}>
-          <h2 style={{ textAlign: "center", marginBottom: "30px", fontSize: "24px", fontWeight: "600" }}>
-            Choose Your Interviewer
+          <h2 style={{ textAlign: "center", marginBottom: "30px", fontSize: "28px", fontWeight: "700", color: "#ffffff" }}>
+            AI Interview Chamber
           </h2>
           
           <div style={styles.avatarGrid}>
             {[
-              { id: "professional", emoji: "👨‍💼", name: "Professional" },
-              { id: "friendly", emoji: "😊", name: "Friendly" },
-              { id: "technical", emoji: "👩‍💻", name: "Technical" }
+              { id: "professional", emoji: "👨‍💼", name: "Executive", personality: "Formal & Analytical" },
+              { id: "friendly", emoji: "😊", name: "Mentor", personality: "Supportive & Encouraging" },
+              { id: "technical", emoji: "👩‍💻", name: "Expert", personality: "Technical & Precise" }
             ].map((avatar) => (
               <div key={avatar.id} style={{ textAlign: "center" }}>
                 <div
                   style={{
                     ...styles.avatar,
-                    background: selectedAvatar === avatar.id ? "linear-gradient(90deg, #6EE7B7 0%, #3B82F6 100%)" : "#F3F4F6",
-                    borderColor: selectedAvatar === avatar.id ? "#3B82F6" : "transparent"
+                    background: selectedAvatar === avatar.id 
+                      ? "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)" 
+                      : "rgba(15, 23, 42, 0.8)",
+                    borderColor: selectedAvatar === avatar.id ? "#00f5ff" : "transparent",
+                    boxShadow: selectedAvatar === avatar.id ? "0 0 30px rgba(0, 245, 255, 0.4)" : "0 4px 16px rgba(0, 0, 0, 0.2)"
                   }}
                   onClick={() => setSelectedAvatar(avatar.id)}
                 >
                   {avatar.emoji}
                 </div>
-                <div style={{ marginTop: "10px", fontSize: "14px", fontWeight: "500" }}>
+                <div style={{ marginTop: "12px", fontSize: "16px", fontWeight: "600", color: "#ffffff" }}>
                   {avatar.name}
+                </div>
+                <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+                  {avatar.personality}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Subject Selection */}
-          <div style={{ marginTop: "30px" }}>
-            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px" }}>Interview Subject</h3>
-            <select
-              value={interviewSubject}
-              onChange={(e) => setInterviewSubject(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #D1D5DB",
-                fontSize: "16px",
-                background: "white"
-              }}
-            >
-              <option value="technical">Technical Skills</option>
-              <option value="behavioral">Behavioral Questions</option>
-              <option value="leadership">Leadership Experience</option>
-              <option value="general">General Interview</option>
-            </select>
+          {/* Subject & Difficulty Selection */}
+          <div style={{ marginTop: "30px", space: "20px" }}>
+            <div style={{ marginBottom: "20px" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px", color: "#a5b4fc" }}>Interview Subject</h3>
+              <select
+                value={interviewSubject}
+                onChange={(e) => setInterviewSubject(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "15px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  fontSize: "16px",
+                  background: "rgba(15, 23, 42, 0.8)",
+                  color: "#ffffff",
+                  backdropFilter: "blur(10px)"
+                }}
+              >
+                <option value="technical">Technical Skills</option>
+                <option value="behavioral">Behavioral Questions</option>
+                <option value="leadership">Leadership Experience</option>
+                <option value="creative">Creative Problem Solving</option>
+                <option value="industry">Industry Knowledge</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "30px" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px", color: "#a5b4fc" }}>Difficulty Level</h3>
+              <select
+                value={difficultyLevel}
+                onChange={(e) => setDifficultyLevel(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "15px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  fontSize: "16px",
+                  background: "rgba(15, 23, 42, 0.8)",
+                  color: "#ffffff",
+                  backdropFilter: "blur(10px)"
+                }}
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="adaptive">Adaptive (AI Adjusts)</option>
+              </select>
+            </div>
           </div>
 
           {/* Start Interview Button */}
           <button
             style={{
               width: "100%",
-              padding: "15px",
-              marginTop: "30px",
-              background: "linear-gradient(90deg, #6EE7B7 0%, #3B82F6 100%)",
+              padding: "18px",
+              background: "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)",
               color: "white",
               border: "none",
-              borderRadius: "12px",
-              fontSize: "18px",
-              fontWeight: "600",
+              borderRadius: "16px",
+              fontSize: "20px",
+              fontWeight: "700",
               cursor: "pointer",
-              transition: "all 0.3s ease"
+              transition: "all 0.3s ease",
+              boxShadow: "0 8px 24px rgba(0, 245, 255, 0.3)"
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.02)";
+              e.currentTarget.style.boxShadow = "0 12px 32px rgba(0, 245, 255, 0.4)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0, 245, 255, 0.3)";
             }}
           >
-            Start Interview Session
+            🚀 Start Interview Session
           </button>
         </div>
 
         {/* Right Panel - Performance Metrics */}
         <div style={styles.panel}>
-          <h2 style={{ marginBottom: "30px", fontSize: "24px", fontWeight: "600" }}>
-            Performance Dashboard
+          <h2 style={{ marginBottom: "30px", fontSize: "24px", fontWeight: "700", color: "#ffffff" }}>
+            Real-time Performance Dashboard
           </h2>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "30px" }}>
-            <div style={{ textAlign: "center", padding: "20px", background: "#F0F9FF", borderRadius: "12px" }}>
-              <div style={{ fontSize: "32px", marginBottom: "10px" }}>👁️</div>
-              <div style={{ fontSize: "24px", fontWeight: "600", color: "#3B82F6" }}>
-                {interviewMetrics.eyeContact}%
-              </div>
-              <div style={{ fontSize: "14px", color: "#6B7280" }}>Eye Contact</div>
+          <div style={styles.metricsGrid}>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{interviewMetrics.responseTime}s</div>
+              <div style={styles.metricLabel}>Response Time</div>
             </div>
-            
-            <div style={{ textAlign: "center", padding: "20px", background: "#F0FDF4", borderRadius: "12px" }}>
-              <div style={{ fontSize: "32px", marginBottom: "10px" }}>🤝</div>
-              <div style={{ fontSize: "24px", fontWeight: "600", color: "#10B981" }}>
-                {interviewMetrics.bodyLanguage}%
-              </div>
-              <div style={{ fontSize: "14px", color: "#6B7280" }}>Body Language</div>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{interviewMetrics.clarity}%</div>
+              <div style={styles.metricLabel}>Clarity Score</div>
+            </div>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{interviewMetrics.relevance}%</div>
+              <div style={styles.metricLabel}>Relevance</div>
+            </div>
+            <div style={styles.metricCard}>
+              <div style={styles.metricValue}>{interviewMetrics.confidence}%</div>
+              <div style={styles.metricLabel}>Confidence</div>
             </div>
           </div>
 
           {/* Live Interview Feedback */}
           <div style={{ 
-            background: "#F9FAFB", 
-            borderRadius: "12px", 
-            padding: "20px", 
-            height: "250px", 
-            overflowY: "auto"
+            background: "rgba(0, 0, 0, 0.4)", 
+            borderRadius: "16px", 
+            padding: "25px", 
+            height: "300px", 
+            overflowY: "auto",
+            marginTop: "30px",
+            border: "1px solid rgba(99, 102, 241, 0.2)"
           }}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "15px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px", color: "#ffffff" }}>
               Interview Progress
             </h3>
-            <div style={{ fontSize: "14px", lineHeight: "1.6", color: "#4B5563" }}>
-              <p style={{ marginBottom: "10px" }}>
-                <strong>Interviewer:</strong> "Tell me about your greatest professional achievement."
-              </p>
-              <p style={{ marginBottom: "10px", color: "#6B7280" }}>
-                <strong>You:</strong> Waiting for response...
-              </p>
-              <div style={{ marginTop: "15px", padding: "10px", background: "#EBF8FF", borderRadius: "8px" }}>
-                <strong style={{ color: "#1E40AF" }}>AI Tip:</strong> Use the STAR method (Situation, Task, Action, Result) for structured responses.
+            <div style={{ fontSize: "16px", lineHeight: "1.7", color: "#e2e8f0" }}>
+              <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(0, 245, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #00f5ff" }}>
+                <strong style={{ color: "#00f5ff" }}>AI Interviewer:</strong> "Describe a challenging project you led and how you overcame obstacles."
+              </div>
+              <div style={{ marginBottom: "15px", padding: "15px", background: "rgba(252, 0, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #fc00ff" }}>
+                <strong style={{ color: "#fc00ff" }}>You:</strong> "In my previous role, I was responsible for..."
+              </div>
+              <div style={{ marginTop: "20px", padding: "15px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "12px" }}>
+                <strong style={{ color: "#10b981" }}>💡 AI Analysis:</strong> 
+                <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
+                  <li>Strong opening with specific context ✓</li>
+                  <li>Use STAR method for better structure</li>
+                  <li>Knowledge depth: {interviewMetrics.knowledgeDepth}</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -605,14 +826,14 @@ function App() {
   const renderSeminar = () => (
     <div style={styles.root}>
       <button style={styles.backButton} onClick={() => setActiveModule("dashboard")}>
-        ← Dashboard
+        ← Back to ChatterPal
       </button>
       
       <div style={styles.dualPanel}>
         {/* Left Panel - Virtual Auditorium */}
         <div style={styles.panel}>
           <div style={styles.auditorium}>
-            <h2 style={{ fontSize: "28px", fontWeight: "600", marginBottom: "30px" }}>
+            <h2 style={{ fontSize: "32px", fontWeight: "700", marginBottom: "30px", color: "#ffffff" }}>
               Virtual Auditorium
             </h2>
             
@@ -621,8 +842,19 @@ function App() {
               {String(seminarTimer % 60).padStart(2, '0')}
             </div>
             
-            <div style={{ fontSize: "18px", marginBottom: "30px", color: "#D1D5DB" }}>
+            <div style={{ fontSize: "20px", marginBottom: "20px", color: "#a5b4fc" }}>
               Audience: {audienceSize} participants
+            </div>
+            
+            <div style={{ fontSize: "18px", marginBottom: "30px", color: "#94a3b8" }}>
+              Audience Mood: <span style={{ 
+                color: audienceReaction === "engaged" ? "#10b981" : 
+                      audienceReaction === "neutral" ? "#f59e0b" : "#ef4444",
+                fontWeight: "600"
+              }}>
+                {audienceReaction.charAt(0).toUpperCase() + audienceReaction.slice(1)} 
+                {audienceReaction === "engaged" ? " 😊" : audienceReaction === "neutral" ? " 😐" : " 😴"}
+              </span>
             </div>
 
             {/* Audience visualization */}
@@ -630,111 +862,145 @@ function App() {
               display: "grid", 
               gridTemplateColumns: "repeat(8, 1fr)", 
               gap: "8px", 
-              maxWidth: "300px", 
-              margin: "0 auto" 
+              maxWidth: "320px", 
+              margin: "0 auto 30px" 
             }}>
-              {Array(24).fill(0).map((_, i) => (
+              {Array(32).fill(0).map((_, i) => (
                 <div
                   key={i}
                   style={{
-                    width: "20px",
-                    height: "20px",
+                    width: "18px",
+                    height: "18px",
                     borderRadius: "50%",
-                    background: Math.random() > 0.2 ? "#6EE7B7" : "#374151",
-                    opacity: Math.random() > 0.1 ? 1 : 0.3
+                    background: Math.random() > 0.15 ? 
+                      (audienceReaction === "engaged" ? "#10b981" : 
+                       audienceReaction === "neutral" ? "#f59e0b" : "#64748b") : "#374151",
+                    opacity: Math.random() > 0.1 ? 1 : 0.4,
+                    animation: audienceReaction === "engaged" ? "pulse 2s infinite" : "none"
                   }}
                 />
               ))}
             </div>
 
+            {/* Speech Metrics */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "15px", marginBottom: "30px" }}>
+              <div style={{ background: "rgba(0, 0, 0, 0.3)", padding: "15px", borderRadius: "12px" }}>
+                <div style={{ fontSize: "18px", fontWeight: "600", color: "#00f5ff" }}>
+                  {speechMetrics.pace}
+                </div>
+                <div style={{ fontSize: "12px", color: "#94a3b8" }}>Speaking Pace</div>
+              </div>
+              <div style={{ background: "rgba(0, 0, 0, 0.3)", padding: "15px", borderRadius: "12px" }}>
+                <div style={{ fontSize: "18px", fontWeight: "600", color: "#fc00ff" }}>
+                  {speechMetrics.coherence}%
+                </div>
+                <div style={{ fontSize: "12px", color: "#94a3b8" }}>Coherence</div>
+              </div>
+            </div>
+
             <button
               style={{
-                marginTop: "30px",
-                padding: "12px 24px",
-                background: seminarTimer > 0 ? "#EF4444" : "#10B981",
+                padding: "15px 30px",
+                background: seminarTimer > 0 ? 
+                  "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : 
+                  "linear-gradient(135deg, #00f5ff 0%, #fc00ff 100%)",
                 color: "white",
                 border: "none",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "500",
-                cursor: "pointer"
+                borderRadius: "12px",
+                fontSize: "18px",
+                fontWeight: "600",
+                cursor: "pointer",
+                boxShadow: seminarTimer > 0 ? 
+                  "0 8px 24px rgba(239, 68, 68, 0.4)" : 
+                  "0 8px 24px rgba(0, 245, 255, 0.4)"
               }}
               onClick={() => {
                 if (seminarTimer > 0) {
                   setSeminarTimer(0);
                 } else {
-                  // Start timer simulation
-                  setInterval(() => {
+                  const interval = setInterval(() => {
                     setSeminarTimer(prev => prev + 1);
                   }, 1000);
+                  
+                  // Simulate audience reactions
+                  setTimeout(() => setAudienceReaction("neutral"), 30000);
+                  setTimeout(() => setAudienceReaction("engaged"), 60000);
                 }
               }}
             >
-              {seminarTimer > 0 ? "End Presentation" : "Start Presentation"}
+              {seminarTimer > 0 ? "🛑 End Presentation" : "🎤 Start Presentation"}
             </button>
           </div>
         </div>
 
         {/* Right Panel - Teleprompter & Q&A */}
         <div style={styles.panel}>
-          <h2 style={{ marginBottom: "20px", fontSize: "24px", fontWeight: "600" }}>
-            Teleprompter & Q&A
+          <h2 style={{ marginBottom: "25px", fontSize: "24px", fontWeight: "700", color: "#ffffff" }}>
+            Smart Teleprompter & AI Q&A
           </h2>
           
-          <div style={styles.teleprompter}>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "15px", color: "#1F2937" }}>
-              Speaking Notes
+          <div style={{ marginBottom: "30px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "15px", color: "#a5b4fc" }}>
+              📝 Speaking Notes
             </h3>
             <textarea
               value={teleprompterText}
               onChange={(e) => setTeleprompterText(e.target.value)}
               style={{
                 width: "100%",
-                height: "150px",
-                background: "transparent",
-                border: "1px solid #D1D5DB",
-                borderRadius: "8px",
-                padding: "12px",
+                height: "180px",
+                background: "rgba(0, 0, 0, 0.4)",
+                border: "1px solid rgba(99, 102, 241, 0.3)",
+                borderRadius: "12px",
+                padding: "16px",
                 fontSize: "16px",
                 lineHeight: "1.6",
                 resize: "none",
-                color: "#1F2937"
+                color: "#ffffff",
+                backdropFilter: "blur(10px)"
               }}
-              placeholder="Enter your presentation notes here..."
+              placeholder="Enter your presentation notes here... AI will generate relevant questions based on your content."
             />
           </div>
 
           {/* Q&A Transcript Panel */}
-          <div style={{ marginTop: "30px" }}>
-            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px" }}>
-              Q&A Transcript
+          <div>
+            <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px", color: "#ffffff" }}>
+              🤖 AI-Generated Q&A Session
             </h3>
             <div style={{
-              background: "#F9FAFB",
-              borderRadius: "12px",
-              padding: "20px",
-              height: "200px",
+              background: "rgba(0, 0, 0, 0.4)",
+              borderRadius: "16px",
+              padding: "25px",
+              height: "250px",
               overflowY: "auto",
-              border: "1px solid #E5E7EB"
+              border: "1px solid rgba(99, 102, 241, 0.2)"
             }}>
               {seminarTimer > 0 ? (
-                <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                  <p style={{ marginBottom: "10px", color: "#6B7280" }}>
-                    <strong>Audience:</strong> "What's your main takeaway from this presentation?"
-                  </p>
-                  <p style={{ marginBottom: "10px", color: "#4B5563" }}>
-                    <strong>You:</strong> "The key point I want everyone to remember is..."
-                  </p>
-                  <p style={{ marginBottom: "10px", color: "#6B7280" }}>
-                    <strong>Audience:</strong> "How does this apply to real-world scenarios?"
-                  </p>
-                  <div style={{ color: "#9CA3AF", fontStyle: "italic", marginTop: "15px" }}>
-                    Live Q&A session in progress...
+                <div style={{ fontSize: "15px", lineHeight: "1.7" }}>
+                  <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(0, 245, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #00f5ff" }}>
+                    <strong style={{ color: "#00f5ff" }}>AI Generated Question:</strong> "Based on your presentation content, how would you handle resistance to change in implementation?"
+                  </div>
+                  <div style={{ marginBottom: "15px", padding: "15px", background: "rgba(252, 0, 255, 0.1)", borderRadius: "12px", borderLeft: "4px solid #fc00ff" }}>
+                    <strong style={{ color: "#fc00ff" }}>Your Response:</strong> "That's an excellent question. Change management requires..."
+                  </div>
+                  <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "12px" }}>
+                    <strong style={{ color: "#10b981" }}>📊 Real-time Analysis:</strong>
+                    <ul style={{ marginTop: "10px", color: "#94a3b8", fontSize: "14px" }}>
+                      <li>• Engagement Level: {speechMetrics.engagement}%</li>
+                      <li>• Speaking Clarity: {speechMetrics.clarity}%</li>
+                      <li>• Audience Attention: High</li>
+                    </ul>
+                  </div>
+                  <div style={{ color: "#64748b", fontStyle: "italic", textAlign: "center", marginTop: "20px" }}>
+                    🎯 AI continues generating contextual questions...
                   </div>
                 </div>
               ) : (
-                <div style={{ color: "#9CA3AF", fontStyle: "italic", textAlign: "center", paddingTop: "60px" }}>
-                  Questions and answers will appear here during your presentation
+                <div style={{ color: "#64748b", fontStyle: "italic", textAlign: "center", paddingTop: "80px" }}>
+                  Start your presentation to see AI-generated questions and real-time audience feedback analysis.
+                  <br /><br />
+                  📈 Advanced features: Pace monitoring, coherence scoring, and dynamic audience reactions.
                 </div>
               )}
             </div>
@@ -751,6 +1017,16 @@ function App() {
   return (
     <div style={styles.root}>
       {renderDashboard()}
+      <style jsx>{`
+        @keyframes float {
+          0% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }
